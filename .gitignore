@@ -1,0 +1,10 @@
+*
+!go.sum
+!.gitignore
+!go.mod
+!*.go
+!*.html
+!*.json
+!*.md
+!*/
+.vscode
