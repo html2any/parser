@@ -2,7 +2,8 @@ package html2json
 
 import (
 	"encoding/json"
-	"parser"
+
+	"github.com/html2any/parser"
 )
 
 func Convert(data []byte) ([]byte, error) {

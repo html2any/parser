@@ -2,7 +2,8 @@ package main
 
 import (
 	"os"
-	"parser/html2json"
+
+	"github.com/html2any/parser/html2json"
 )
 
 func main() {

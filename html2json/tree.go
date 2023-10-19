@@ -1,6 +1,6 @@
 package html2json
 
-import "parser"
+import "github.com/html2any/parser"
 
 type Tag struct {
 	TagName  string            `json:"tagName"`

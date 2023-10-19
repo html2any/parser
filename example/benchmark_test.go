@@ -3,9 +3,10 @@ package main
 import (
 	"encoding/json"
 	"os"
-	"parser"
-	"parser/html2json"
 	"testing"
+
+	"github.com/html2any/parser"
+	"github.com/html2any/parser/html2json"
 )
 
 func BenchmarkHTMLParser(b *testing.B) {
