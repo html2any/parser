@@ -22,7 +22,7 @@ func BenchmarkHTMLParser(b *testing.B) {
 	}
 }
 
-// func BenchmarkHTMLParser2(b *testing.B) {
+// func BenchmarkHTMLParserByNetHTML(b *testing.B) {
 // 	data, err := os.ReadFile("complicated.html")
 // 	if err != nil {
 // 		panic(err)

@@ -98,9 +98,10 @@ goos: linux
 goarch: amd64
 pkg: parser/example
 cpu: Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz
-BenchmarkHTMLParser-24              6163           1073297 ns/op          309241 B/op       5121 allocs/op
-BenchmarkJSONParser-24              1467           3996523 ns/op          218326 B/op       5235 allocs/op
-BenchmarkSonicParser-24             4953           1155688 ns/op          232023 B/op       2171 allocs/op
+BenchmarkHTMLParser-24                      6390            988853 ns/op          197689 B/op       4407 allocs/op
+BenchmarkHTMLParserByNetHTML-24             4892           1192781 ns/op          200719 B/op       4020 allocs/op
+BenchmarkJSONParser-24                      1194           5007065 ns/op          234991 B/op       5561 allocs/op
+BenchmarkSonicParser-24                     4796           1198912 ns/op          235447 B/op       2232 allocs/op
 PASS
 ok      parser/example  19.045s
 ```
