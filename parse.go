@@ -19,8 +19,8 @@ type IHtmlTag interface {
 	SetAttr(attr string, value string) IHtmlTag
 }
 
-func findAllAttrs(data *[]byte, cur *int) (self_close bool, attrs map[string]string, err error) {
-	attrs = make(map[string]string)
+func findAllAttrs(data *[]byte, attrs *map[string]string, cur *int) (self_close bool, err error) {
+	// attrs = make(map[string]string)
 	last_key_start := *cur
 	last_key_end := -1
 	last_val_start := -1
@@ -38,7 +38,7 @@ func findAllAttrs(data *[]byte, cur *int) (self_close bool, attrs map[string]str
 				last_key_start = *cur + 1
 				last_val_start = -1
 				last_key_end = -1
-				attrs[key] = val
+				(*attrs)[key] = val
 			}
 		case ' ', '\t', '\n', '\r':
 			if last_key_end == -1 {
@@ -165,39 +165,128 @@ func ParseHTML(data []byte, root IHtmlTag) error {
 				}
 			} else if tag_name, err := findTag(&data, &cur); err != nil { //look for tag
 				return err
-			} else if self_close, attrs, err := findAllAttrs(&data, &cur); err != nil { //look for attr
-				return err
-			} else if ptop := stack.Peek(); ptop == nil { //first tag is root
-				root.SetTagName(tag_name)
-				for k, v := range attrs {
-					root.SetAttr(k, v)
-				}
-				stack.Push(&root)
 			} else {
-				ct := getContent(&data, content_start, content_end)
-				content_start = cur + 1
-				if len(ct) > 0 {
-					text_tag := (*ptop).NewTag().SetTagName("span")
-					text_tag.SetContent(string(ct))
-					if parent := stack.Peek(); parent != nil {
-						(*parent).AddChild(text_tag)
+				attrs := make(map[string]string)
+				if self_close, err := findAllAttrs(&data, &attrs, &cur); err != nil { //look for attr
+					return err
+				} else if ptop := stack.Peek(); ptop == nil { //first tag is root
+					root.SetTagName(tag_name)
+					for k, v := range attrs {
+						root.SetAttr(k, v)
 					}
-				}
-
-				sub_tag := (*ptop).NewTag().SetTagName(tag_name)
-				for k, v := range attrs {
-					sub_tag.SetAttr(k, v)
-				}
-
-				if self_close {
-					if parent := stack.Peek(); parent != nil {
-						(*parent).AddChild(sub_tag)
+					stack.Push(&root)
+					ct := getContent(&data, content_start, content_end)
+					content_start = cur + 1
+					if len(ct) > 0 {
+						text_tag := (root).NewTag().SetTagName("span")
+						text_tag.SetContent(string(ct))
+						(root).AddChild(text_tag)
 					}
 				} else {
-					stack.Push(&sub_tag)
+					ct := getContent(&data, content_start, content_end)
+					content_start = cur + 1
+					if len(ct) > 0 {
+						text_tag := (*ptop).NewTag().SetTagName("span")
+						text_tag.SetContent(string(ct))
+						if parent := stack.Peek(); parent != nil {
+							(*parent).AddChild(text_tag)
+						}
+					}
+
+					sub_tag := (*ptop).NewTag().SetTagName(tag_name)
+					for k, v := range attrs {
+						sub_tag.SetAttr(k, v)
+					}
+
+					if self_close {
+						if parent := stack.Peek(); parent != nil {
+							(*parent).AddChild(sub_tag)
+						}
+					} else {
+						stack.Push(&sub_tag)
+					}
 				}
 			}
 		}
 	}
 	return ErrHtmlClose
 }
+
+// func ParseHTML2(data []byte, root IHtmlTag) error {
+// 	stack := NewStack()
+// 	z := html.NewTokenizer(bytes.NewReader(data))
+// 	for {
+// 		tt := z.Next()
+// 		switch tt {
+// 		case html.ErrorToken:
+// 			return z.Err()
+// 		case html.TextToken:
+// 			d := z.Text()
+// 			ct := getContent(&d, 0, len(d)-1)
+// 			ptop := stack.Peek()
+// 			top := *ptop
+// 			if len(ct) > 0 {
+// 				text_tag := top.NewTag().SetTagName("span")
+// 				text_tag.SetContent(string(ct))
+// 				top.AddChild(text_tag)
+// 			}
+// 		case html.StartTagToken:
+// 			tname, hasAttr := z.TagName()
+// 			tag_name := string(tname)
+// 			if ptop := stack.Peek(); ptop == nil { //first tag is root
+// 				root.SetTagName(tag_name)
+// 				if hasAttr {
+// 					for {
+// 						k, v, more := z.TagAttr()
+// 						root.SetAttr(string(k), string(v))
+// 						if !more {
+// 							break
+// 						}
+// 					}
+// 				}
+// 				stack.Push(&root)
+// 			} else {
+// 				sub_tag := (*ptop).NewTag().SetTagName(tag_name)
+// 				if hasAttr {
+// 					for {
+// 						k, v, more := z.TagAttr()
+// 						sub_tag.SetAttr(string(k), string(v))
+// 						if !more {
+// 							break
+// 						}
+// 					}
+// 				}
+// 				stack.Push(&sub_tag)
+// 			}
+// 		case html.EndTagToken:
+// 			ptop := stack.Pop()
+// 			top := *ptop
+// 			tag_name, _ := z.TagName()
+// 			if top.GetTagName() != string(tag_name) {
+// 				return ErrHtmlTagMismatch
+// 			} else if parent := stack.Peek(); parent != nil {
+// 				(*parent).AddChild(top)
+// 			} else {
+// 				return nil
+// 			}
+// 		case html.SelfClosingTagToken:
+// 			ptop := stack.Peek()
+// 			tname, hasAttr := z.TagName()
+// 			tag_name := string(tname)
+// 			sub_tag := (*ptop).NewTag().SetTagName(tag_name)
+// 			if hasAttr {
+// 				for {
+// 					k, v, more := z.TagAttr()
+// 					sub_tag.SetAttr(string(k), string(v))
+// 					if !more {
+// 						break
+// 					}
+// 				}
+// 			}
+
+// 			if parent := stack.Peek(); parent != nil {
+// 				(*parent).AddChild(sub_tag)
+// 			}
+// 		}
+// 	}
+// }
