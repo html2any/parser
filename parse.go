@@ -73,10 +73,10 @@ func findTag(data *[]byte, pos *int) (tag string, err error) {
 	for *pos < len(*data) {
 		c := (*data)[*pos]
 		if tag_start == -1 {
-			if c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' {
+			if c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' {
 				tag_start = *pos
 			}
-		} else if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
+		} else if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9') {
 			tag = string((*data)[tag_start:*pos])
 			return
 		}
